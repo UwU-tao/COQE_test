@@ -464,10 +464,10 @@ def token_mapping_bert(bert_token_col, gold_token_col):
     for index in range(len(bert_token_col)):
         seq_map, bert_index, token_index = {}, 1, 0
         seq_bert_token, seq_gold_token = bert_token_col[index], gold_token_col[index]
-        
         # print('seq_bert_token', seq_bert_token)
         # print('seq_gold_token', seq_gold_token)
-        
+        if(seq_gold_token[0] == ''):
+            continue
         while bert_index < len(seq_bert_token) and token_index < len(seq_gold_token):
             seq_map[token_index] = [bert_index]
 
@@ -499,7 +499,9 @@ def token_mapping_bert(bert_token_col, gold_token_col):
                 
                         
             # print(bert_length, token_length)
-            
+            if(bert_length!=token_length):
+                print(len(seq_bert_token))
+                print(len(seq_gold_token))
             assert bert_length == token_length, "appear mapping error!"
             # check_utils.check_mapping_process(seq_map, seq_gold_token, seq_bert_token)
 

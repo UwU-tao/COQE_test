@@ -56,7 +56,7 @@ def TerminalParser():
 
     # model parameters.
     parser.add_argument('--embed_dropout', help='prob of embedding dropout', type=float, default=0.1)
-    parser.add_argument('--factor', help='the type of data set', type=float, default=0.4)
+    parser.add_argument('--factor', help='the type of data set', type=float, default=0.3)
 
     # optimizer parameters.
     parser.add_argument('--bert_lr', help='the type of data set', type=float, default=2e-5)
@@ -82,10 +82,10 @@ def get_necessary_parameters(args):
                   "program_mode": args.program_mode}
 
     return param_dict
-std_sents = []
-def convert_data(data_type):
+
+def convert_data(data_type,file_name = ''):
     folder_path = ''
-    des_file = ''
+    std_sents = []
     if data_type == 'train':
         folder_path = '../data/smartphone/VLSP2023_ComOM_training_v2'
         des_file = '../data/smartphone/train.txt'
@@ -96,24 +96,25 @@ def convert_data(data_type):
         folder_path = '../data/smartphone/VLSP2023_ComOM_dev_v2'
         des_file = '../data/smartphone/dev.txt'
 
-
+    
     files = os.listdir(folder_path)
-
+    if (data_type == 'test'):
+        print(file_name)
+        files.clear()
+        files.append(file_name)
     sentences_and_content = []
-  
     for file_name in files:
         # if file_name.startswith('train_') and file_name.endswith('.txt'):
         file_path = os.path.join(folder_path, file_name)
         with open(file_path, 'r', encoding='utf-8') as file:
             sections = file.read().split('\n\n')
-
             for section in sections:
                 tmp=""
                 parts = section.split('\n')
                 json_format = ""
                 if len(parts) >= 2:
-                    sentences = parts[0].strip()
-                    tmp, sentence = sentences.split('\t')
+                    sentence = parts[0].strip()
+                    tmp, sentence = sentence.split('\t')
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '1'
 
@@ -165,27 +166,29 @@ def convert_data(data_type):
                     sentences_and_content.append(combined_format)
 
                 else:
-                    sentences = parts[0].split('\t')
-                    if len(sentences) == 1:
+                    sentence = parts[0].split('\t')
+                    if len(sentence) == 1:
                         continue
                     else:
-                        tmp = sentences[0]
-                        sentence = sentences[-1]
+                        tmp = sentence[0]
+                        sentence = sentence[-1]
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '0'
                     json_format = "[[];[];[];[];[]]"
                     combined_format = f"{sentence}\n{json_format}"
                     sentences_and_content.append(combined_format)
-                if data_type == 'test':
+                if(data_type == 'test'):
+                    
                     std_sents.append(tmp)
+    
     with open(des_file, 'w', encoding='utf-8') as output_file:
         for item in sentences_and_content:
             output_file.write(str(item) + '\n')
+    return std_sents
             
 def main():    
     # get program configure
     args = TerminalParser()
-
     # set random seed
     set_seed(args.seed)
 
@@ -210,298 +213,304 @@ def main():
     # else:
     #     data_gene = coae13_utils.DataGenerator(config)
     
-    convert_data('train')
-    convert_data('test')
-    convert_data('dev')
+    s = convert_data('train')
     
-    data_gene = kesserl14_utils.DataGenerator(config)
-    data_gene.generate_data()
+    a = convert_data('dev')
+    for i in range(1,25):
+      if(i>=10):
+        filename = f"dev_00{i}.txt"
+      else:
+        filename = f"dev_000{i}.txt"
 
-    data_gene.test_data_dict['std_sents'] = std_sents
-    print(len(data_gene.test_data_dict['std_sents']))
-    global_eval = BaseEvaluation(config)
-    global_pair_eval = BaseEvaluation(config)
+      std_sents = convert_data('test',file_name = filename)
+      data_gene = kesserl14_utils.DataGenerator(config)
+      data_gene.generate_data()
 
-    print("create data loader")
-    train_loader = data_loader_utils.create_first_data_loader(
-        data_gene.train_data_dict, config.batch_size
-    )
+      data_gene.test_data_dict['std_sents'] = std_sents
+      data_gene.test_data_dict['file_name'] = filename
+      print('len', len(data_gene.test_data_dict['sentences']))
+      global_eval = BaseEvaluation(config)
+      global_pair_eval = BaseEvaluation(config)
 
-    dev_loader = data_loader_utils.create_first_data_loader(
-        data_gene.dev_data_dict, config.batch_size
-    )
+      print("create data loader")
+      train_loader = data_loader_utils.create_first_data_loader(
+          data_gene.train_data_dict, config.batch_size
+      )
 
-    test_loader = data_loader_utils.create_first_data_loader(
-        data_gene.test_data_dict, config.batch_size
-    )
+      dev_loader = data_loader_utils.create_first_data_loader(
+          data_gene.dev_data_dict, config.batch_size
+      )
 
-    # run first-stage model.(extract four type elements)
-    if config.stage_model == "first" and config.program_mode != "test":
-        first_data_loader = [train_loader, dev_loader, test_loader]
+      test_loader = data_loader_utils.create_first_data_loader(
+          data_gene.test_data_dict, config.batch_size
+      )
 
-        dev_comp_eval = create_eval.create_first_stage_eval(
-            config,
-            (data_gene.dev_data_dict['multi_label'], data_gene.dev_data_dict['result_label']),
-            data_gene.dev_data_dict['comparative_label'],
-            data_gene.dev_data_dict['attn_mask'],
-            save_model=True
-        )
+      # run first-stage model.(extract four type elements)
+      if config.stage_model == "first" and config.program_mode != "test":
+          first_data_loader = [train_loader, dev_loader, test_loader]
 
-        test_comp_eval = create_eval.create_first_stage_eval(
-            config,
-            (data_gene.test_data_dict['multi_label'], data_gene.test_data_dict['result_label']),
-            data_gene.test_data_dict['comparative_label'],
-            data_gene.test_data_dict['attn_mask'],
-            save_model=False
-        )
+          dev_comp_eval = create_eval.create_first_stage_eval(
+              config,
+              (data_gene.dev_data_dict['multi_label'], data_gene.dev_data_dict['result_label']),
+              data_gene.dev_data_dict['comparative_label'],
+              data_gene.dev_data_dict['attn_mask'],
+              save_model=True
+          )
 
-        comp_eval = [dev_comp_eval, test_comp_eval, global_eval]
+          test_comp_eval = create_eval.create_first_stage_eval(
+              config,
+              (data_gene.test_data_dict['multi_label'], data_gene.test_data_dict['result_label']),
+              data_gene.test_data_dict['comparative_label'],
+              data_gene.test_data_dict['attn_mask'],
+              save_model=False
+          )
 
-        train_test_utils.first_stage_model_main(
-            config, data_gene, first_data_loader, comp_eval,
-            model_parameters, optimizer_parameters,
-            model_name
-        )
+          comp_eval = [dev_comp_eval, test_comp_eval, global_eval]
 
-    elif config.program_mode == "test" and config.stage_model == "first":
-        dev_parameters = ["./ModelResult//" + model_name + "/dev_elem_result.txt",
-                          "./PreTrainModel//" + model_name + "/dev_model"]
+          train_test_utils.first_stage_model_main(
+              config, data_gene, first_data_loader, comp_eval,
+              model_parameters, optimizer_parameters,
+              model_name
+          )
 
-        print("========================test==========================")
-        predicate_model = torch.load(dev_parameters[1])
+      elif config.program_mode == "test" and config.stage_model == "first":
+          dev_parameters = ["./ModelResult//" + model_name + "/dev_elem_result.txt",
+                            "./PreTrainModel/" + model_name + "/dev_model"]
 
-        test_parameters = ["./ModelResult/" + model_name + "/test_elem_result.txt", None]
+          print("========================test==========================")
+          predicate_model = torch.load(dev_parameters[1])
 
-        test_comp_eval = create_eval.create_first_stage_eval(
-            config,
-            (data_gene.test_data_dict['multi_label'], data_gene.test_data_dict['result_label']),
-            data_gene.test_data_dict['comparative_label'],
-            data_gene.test_data_dict['attn_mask'],
-            save_model=False
-        )
+          test_parameters = ["./ModelResult/" + model_name + "/test_elem_result.txt", None]
 
-        train_test_utils.first_stage_model_test(
-            predicate_model, config, test_loader, test_comp_eval, test_parameters
-        )
+          test_comp_eval = create_eval.create_first_stage_eval(
+              config,
+              (data_gene.test_data_dict['multi_label'], data_gene.test_data_dict['result_label']),
+              data_gene.test_data_dict['comparative_label'],
+              data_gene.test_data_dict['attn_mask'],
+              save_model=False
+          )
 
-        test_comp_eval.print_elem_result(
-            data_gene.test_data_dict['sentences'], data_gene.test_data_dict['input_ids'], data_gene.test_data_dict['attn_mask'],
-            "./ModelResult/" + model_name + "/test_result_file" + ".txt", drop_span=False
-        )
+          train_test_utils.first_stage_model_test(
+              predicate_model, config, test_loader, test_comp_eval, test_parameters
+          )
 
-        # add average measure.
-        shared_utils.calculate_average_measure(test_comp_eval, global_eval)
+          test_comp_eval.print_elem_result(
+              data_gene.test_data_dict['sentences'], data_gene.test_data_dict['input_ids'], data_gene.test_data_dict['attn_mask'],
+              "./ModelResult/" + model_name + "/test_result_file" + ".txt", drop_span=False
+          )
 
-        #Stage 2
-        feature_type = 0
+          # add average measure.
+          shared_utils.calculate_average_measure(test_comp_eval, global_eval)
 
-        # using evaluation to generate index col and pair label.
-        generate_second_res_eval = ElementEvaluation(
-            config, elem_col=config.val.elem_col,
-            ids_to_tags=config.val.invert_norm_id_map
-        )
+          #Stage 2
+          feature_type = 0
 
-        pre_train_model_path = "./PreTrainModel/" + model_name + "/dev_model"
+          # using evaluation to generate index col and pair label.
+          generate_second_res_eval = ElementEvaluation(
+              config, elem_col=config.val.elem_col,
+              ids_to_tags=config.val.invert_norm_id_map
+          )
+          
 
-        if not os.path.exists(pre_train_model_path):
-            print("[ERROR] pre-train model isn't exist")
-            return
+          pre_train_model_path = "./PreTrainModel/" + model_name + "/dev_model"
 
-        elem_model = torch.load(pre_train_model_path)
+          if not os.path.exists(pre_train_model_path):
+              print("[ERROR] pre-train model isn't exist")
+              return
 
-        test_first_process_data_path = "./ModelResult/" + model_name + "/test_first_data_" + str(feature_type) + ".txt"
+          elem_model = torch.load(pre_train_model_path)
 
-        if os.path.exists(test_first_process_data_path):
-            test_candidate_pair_col, test_pair_representation, test_make_pair_label = \
-                shared_utils.read_pickle(test_first_process_data_path)
+          test_first_process_data_path = "./ModelResult/" + model_name + "/test_first_data_" + str(feature_type) + ".txt"
 
-        else:
-            test_candidate_pair_col, test_pair_representation, test_make_pair_label, _, _ = \
-                train_test_utils.first_stage_model_test(
-                    elem_model, config, test_loader, generate_second_res_eval,
-                    eval_parameters=[data_gene.test_data_dict['tuple_pair_col']],
-                    test_type="gene", feature_type=feature_type
-                )
+          # if os.path.exists(test_first_process_data_path):
+          #     test_candidate_pair_col, test_pair_representation, test_make_pair_label = \
+          #         shared_utils.read_pickle(test_first_process_data_path)
 
-            shared_utils.write_pickle(
-                [test_candidate_pair_col, test_pair_representation, test_make_pair_label],
-                test_first_process_data_path
-            )
+          # else:
+          test_candidate_pair_col, test_pair_representation, test_make_pair_label, _, _ = \
+              train_test_utils.first_stage_model_test(
+                  elem_model, config, test_loader, generate_second_res_eval,
+                  eval_parameters=[data_gene.test_data_dict['tuple_pair_col']],
+                  test_type="gene", feature_type=feature_type
+              )
 
-        dev_pair_parameters = ["./ModelResult/" + model_name + "/dev_pair_result.txt",
-                               "./PreTrainModel/" + model_name + "/dev_pair_model"]
+          # shared_utils.write_pickle(
+          #     [test_candidate_pair_col, test_pair_representation, test_make_pair_label],
+          #     test_first_process_data_path
+          # )
 
-        dev_polarity_parameters = ["./ModelResult/" + model_name + "/dev_polarity_result.txt",
-                                   "./PreTrainModel/" + model_name + "/dev_polarity_model"]
+          dev_pair_parameters = ["./ModelResult/" + model_name + "/dev_pair_result.txt",
+                                "./PreTrainModel/" + model_name + "/dev_pair_model"]
 
-        test_pair_parameters = ["./ModelResult/" + model_name + "/test_pair_result.txt", None]
-        test_polarity_parameters = ["./ModelResult/" + model_name + "/test_pair_result.txt", None]
+          dev_polarity_parameters = ["./ModelResult/" + model_name + "/dev_polarity_result.txt",
+                                    "./PreTrainModel/" + model_name + "/dev_polarity_model"]
 
-        predict_pair_model = torch.load(dev_pair_parameters[1])
-        predict_polarity_model = torch.load(dev_polarity_parameters[1])
+          test_pair_parameters = ["./ModelResult/" + model_name + "/test_pair_result.txt", None]
+          test_polarity_parameters = ["./ModelResult/" + model_name + "/test_pair_result.txt", None]
 
-        test_pair_eval = PairEvaluation(
-            config,
-            gold_pair_col=data_gene.test_data_dict['tuple_pair_col'],
-            candidate_pair_col=test_candidate_pair_col,
-            elem_col=config.val.elem_col,
-            ids_to_tags=config.val.norm_id_map,
-            save_model=False
-        )
+          predict_pair_model = torch.load(dev_pair_parameters[1])
+          predict_polarity_model = torch.load(dev_polarity_parameters[1])
 
-        test_pair_loader = data_loader_utils.get_loader([test_pair_representation], 1)
+          test_pair_eval = PairEvaluation(
+              config,
+              gold_pair_col=data_gene.test_data_dict['tuple_pair_col'],
+              candidate_pair_col=test_candidate_pair_col,
+              elem_col=config.val.elem_col,
+              ids_to_tags=config.val.norm_id_map,
+              save_model=False
+          )
 
-        train_test_utils.pair_stage_model_test(
-            predict_pair_model, config, test_pair_loader, test_pair_eval,
-            test_pair_parameters, mode="pair", polarity=False, initialize=(False, False)
-        )
-        print(data_gene.test_data_dict['mapping_col'][0], '\n', data_gene.test_data_dict['sentences'][0])
-        shared_utils.calculate_average_measure(test_pair_eval, global_pair_eval)
-        global_pair_eval.avg_model("./ModelResult/" + model_name + "/test_pair_result.txt")
-        global_pair_eval.store_result_to_csv([model_name], "result.csv")
+          test_pair_loader = data_loader_utils.get_loader([test_pair_representation], 1)
 
-        shared_utils.clear_global_measure(global_pair_eval)
-        shared_utils.clear_optimize_measure(test_pair_eval)
+          # train_test_utils.pair_stage_model_test(
+          #     predict_pair_model, config, test_pair_loader, test_pair_eval,
+          #     test_pair_parameters, mode="pair", polarity=False, initialize=(False, False)
+          # )
+          shared_utils.calculate_average_measure(test_pair_eval, global_pair_eval)
+          global_pair_eval.avg_model("./ModelResult/" + model_name + "/test_pair_result.txt")
+          global_pair_eval.store_result_to_csv([model_name], "result.csv")
 
-        # create polarity representation and data loader.
-        test_polarity_representation = cpc.get_after_pair_representation(test_pair_eval.y_hat, test_pair_representation)
-        test_polarity_loader = data_loader_utils.get_loader([test_polarity_representation], 1)
+          shared_utils.clear_global_measure(global_pair_eval)
+          shared_utils.clear_optimize_measure(test_pair_eval)
 
-        train_test_utils.pair_stage_model_test(
-            predict_polarity_model, config, test_polarity_loader, test_pair_eval,
-            test_polarity_parameters, mode="polarity", polarity=True, initialize=(True, True),
-            data_dict=data_gene.test_data_dict
-        )
+          # create polarity representation and data loader.
+          test_polarity_representation = cpc.get_after_pair_representation(test_pair_eval.y_hat, test_pair_representation)
+          test_polarity_loader = data_loader_utils.get_loader([test_polarity_representation], 1)
 
-        # add average measure.
-        shared_utils.calculate_average_measure(test_pair_eval, global_pair_eval)
+          train_test_utils.pair_stage_model_test(
+              predict_polarity_model, config, test_polarity_loader, test_pair_eval,
+              test_polarity_parameters, mode="polarity", polarity=True, initialize=(True, True),
+              data_dict=data_gene.test_data_dict
+          )
 
-    elif config.stage_model == "second":
-        # 0: 768 + 5, 1: 5, 2: 768
-        feature_type = 0
+          # add average measure.
+          shared_utils.calculate_average_measure(test_pair_eval, global_pair_eval)
 
-        # using evaluation to generate index col and pair label.
-        generate_second_res_eval = ElementEvaluation(
-            config, elem_col=config.val.elem_col,
-            ids_to_tags=config.val.invert_norm_id_map
-        )
+      elif config.stage_model == "second":
+          # 0: 768 + 5, 1: 5, 2: 768
+          feature_type = 0
 
-        pre_train_model_path = "./PreTrainModel/" + model_name + "/dev_model"
+          # using evaluation to generate index col and pair label.
+          generate_second_res_eval = ElementEvaluation(
+              config, elem_col=config.val.elem_col,
+              ids_to_tags=config.val.invert_norm_id_map
+          )
 
-        if not os.path.exists(pre_train_model_path):
-            print("[ERROR] pre-train model isn't exist")
-            return
+          pre_train_model_path = "./PreTrainModel/" + model_name + "/dev_model"
 
-        elem_model = torch.load(pre_train_model_path)
+          if not os.path.exists(pre_train_model_path):
+              print("[ERROR] pre-train model isn't exist")
+              return
 
-        print(model_name)
-        print('before first process data')
-        train_first_process_data_path = "./ModelResult/" + model_name + "/train_first_data_" + str(feature_type) + ".txt"
-        dev_first_process_data_path = "./ModelResult/" + model_name + "/dev_first_data_" + str(feature_type) + ".txt"
-        test_first_process_data_path = "./ModelResult/" + model_name + "/test_first_data_" + str(feature_type) + ".txt"
+          elem_model = torch.load(pre_train_model_path)
 
-        # print(data_gene.train_data_dict['tuple_pair_col'])
-        
-        if os.path.exists(train_first_process_data_path):
-            train_pair_representation, train_make_pair_label, train_polarity_representation, train_polarity_label = \
-                shared_utils.read_pickle(train_first_process_data_path)
-        else:
-            _, train_pair_representation, train_make_pair_label, train_feature_out, train_bert_feature_out = \
-                train_test_utils.first_stage_model_test(
-                    elem_model, config, train_loader, generate_second_res_eval,
-                    eval_parameters=[data_gene.train_data_dict['tuple_pair_col']],
-                    test_type="gene", feature_type=feature_type
-                )
-        
-        # print(type(train_pair_representation), type(train_make_pair_label))
-        train_pair_representation, train_make_pair_label = cpc.generate_train_pair_data(
-            train_pair_representation, train_make_pair_label
-        )
+          print(model_name)
+          print('before first process data')
+          train_first_process_data_path = "./ModelResult/" + model_name + "/train_first_data_" + str(feature_type) + ".txt"
+          dev_first_process_data_path = "./ModelResult/" + model_name + "/dev_first_data_" + str(feature_type) + ".txt"
+          test_first_process_data_path = "./ModelResult/" + model_name + "/test_first_data_" + str(feature_type) + ".txt"
 
-        train_polarity_representation, train_polarity_label = cpc.create_polarity_train_data(
-            config, data_gene.train_data_dict['tuple_pair_col'], train_feature_out,
-            train_bert_feature_out, feature_type=feature_type
-        )
+          # print(data_gene.train_data_dict['tuple_pair_col'])
+          
+          if os.path.exists(train_first_process_data_path):
+              train_pair_representation, train_make_pair_label, train_polarity_representation, train_polarity_label = \
+                  shared_utils.read_pickle(train_first_process_data_path)
+          else:
+              _, train_pair_representation, train_make_pair_label, train_feature_out, train_bert_feature_out = \
+                  train_test_utils.first_stage_model_test(
+                      elem_model, config, train_loader, generate_second_res_eval,
+                      eval_parameters=[data_gene.train_data_dict['tuple_pair_col']],
+                      test_type="gene", feature_type=feature_type
+                  )
+          
+          # print(type(train_pair_representation), type(train_make_pair_label))
+          train_pair_representation, train_make_pair_label = cpc.generate_train_pair_data(
+              train_pair_representation, train_make_pair_label
+          )
 
-        shared_utils.write_pickle(
-            [train_pair_representation, train_make_pair_label,
-                train_polarity_representation, train_polarity_label],
-            train_first_process_data_path
-        )
+          train_polarity_representation, train_polarity_label = cpc.create_polarity_train_data(
+              config, data_gene.train_data_dict['tuple_pair_col'], train_feature_out,
+              train_bert_feature_out, feature_type=feature_type
+          )
 
-        if os.path.exists(dev_first_process_data_path):
-            dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label = \
-                shared_utils.read_pickle(dev_first_process_data_path)
-            print('dev_candidate_pair_col', dev_candidate_pair_col)
-            print('dev_make_pair_label', dev_make_pair_label)
+          shared_utils.write_pickle(
+              [train_pair_representation, train_make_pair_label,
+                  train_polarity_representation, train_polarity_label],
+              train_first_process_data_path
+          )
 
-        else:
-            dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label, _, _ = \
-                train_test_utils.first_stage_model_test(
-                    elem_model, config, dev_loader, generate_second_res_eval,
-                    eval_parameters=[data_gene.dev_data_dict['tuple_pair_col']],
-                    test_type="gene", feature_type=feature_type
-                )
+          if os.path.exists(dev_first_process_data_path):
+              dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label = \
+                  shared_utils.read_pickle(dev_first_process_data_path)
+              print('dev_candidate_pair_col', dev_candidate_pair_col)
+              print('dev_make_pair_label', dev_make_pair_label)
 
-            shared_utils.write_pickle(
-                [dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label],
-                dev_first_process_data_path
-            )
+          else:
+              dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label, _, _ = \
+                  train_test_utils.first_stage_model_test(
+                      elem_model, config, dev_loader, generate_second_res_eval,
+                      eval_parameters=[data_gene.dev_data_dict['tuple_pair_col']],
+                      test_type="gene", feature_type=feature_type
+                  )
 
-        # print(dev_candidate_pair_col, '\n', dev_pair_representation, '\n', dev_make_pair_label)
-        if os.path.exists(test_first_process_data_path):
-            test_candidate_pair_col, test_pair_representation, test_make_pair_label = \
-                shared_utils.read_pickle(test_first_process_data_path)
+              shared_utils.write_pickle(
+                  [dev_candidate_pair_col, dev_pair_representation, dev_make_pair_label],
+                  dev_first_process_data_path
+              )
 
-        else:
-            test_candidate_pair_col, test_pair_representation, test_make_pair_label, _, _ = \
-                train_test_utils.first_stage_model_test(
-                    elem_model, config, test_loader, generate_second_res_eval,
-                    eval_parameters=[data_gene.test_data_dict['tuple_pair_col']],
-                    test_type="gene", feature_type=feature_type
-                )
+          # print(dev_candidate_pair_col, '\n', dev_pair_representation, '\n', dev_make_pair_label)
+          if os.path.exists(test_first_process_data_path):
+              test_candidate_pair_col, test_pair_representation, test_make_pair_label = \
+                  shared_utils.read_pickle(test_first_process_data_path)
 
-            shared_utils.write_pickle(
-                [test_candidate_pair_col, test_pair_representation, test_make_pair_label],
-                test_first_process_data_path
-            )
+          else:
+              test_candidate_pair_col, test_pair_representation, test_make_pair_label, _, _ = \
+                  train_test_utils.first_stage_model_test(
+                      elem_model, config, test_loader, generate_second_res_eval,
+                      eval_parameters=[data_gene.test_data_dict['tuple_pair_col']],
+                      test_type="gene", feature_type=feature_type
+                  )
 
-        pair_representation = [train_pair_representation, dev_pair_representation, test_pair_representation]
-        make_pair_label = [train_make_pair_label, dev_make_pair_label, test_make_pair_label]
+              shared_utils.write_pickle(
+                  [test_candidate_pair_col, test_pair_representation, test_make_pair_label],
+                  test_first_process_data_path
+              )
 
-        dev_pair_eval = PairEvaluation(
-            config,
-            gold_pair_col=data_gene.dev_data_dict['tuple_pair_col'],
-            candidate_pair_col=dev_candidate_pair_col,
-            elem_col=config.val.elem_col,
-            ids_to_tags=config.val.norm_id_map,
-            save_model=True
-        )
+          pair_representation = [train_pair_representation, dev_pair_representation, test_pair_representation]
+          make_pair_label = [train_make_pair_label, dev_make_pair_label, test_make_pair_label]
 
-        test_pair_eval = PairEvaluation(
-            config,
-            gold_pair_col=data_gene.test_data_dict['tuple_pair_col'],
-            candidate_pair_col=test_candidate_pair_col,
-            elem_col=config.val.elem_col,
-            ids_to_tags=config.val.norm_id_map,
-            save_model=False
-        )
+          dev_pair_eval = PairEvaluation(
+              config,
+              gold_pair_col=data_gene.dev_data_dict['tuple_pair_col'],
+              candidate_pair_col=dev_candidate_pair_col,
+              elem_col=config.val.elem_col,
+              ids_to_tags=config.val.norm_id_map,
+              save_model=True
+          )
 
-        train_test_utils.pair_stage_model_main(
-            config, pair_representation, make_pair_label,
-            [dev_pair_eval, test_pair_eval, global_pair_eval],
-            [train_polarity_representation, train_polarity_label],
-            model_parameters, optimizer_parameters, model_name, feature_type,
-            data_gene.test_data_dict
-        )
-        print(test_pair_eval.polarity_hat)
-    print('keys', data_gene.test_data_dict.keys())
-    if config.stage_model == "first":
-        global_eval.avg_model("./ModelResult/" + model_name + "/test_extraction_result.txt")
-        global_eval.store_result_to_csv([model_name], "result.csv")
-    else:
-        global_pair_eval.avg_model("./ModelResult/" + model_name + "/test_pair_result.txt")
-        global_pair_eval.store_result_to_csv([model_name], "result.csv")
+          test_pair_eval = PairEvaluation(
+              config,
+              gold_pair_col=data_gene.test_data_dict['tuple_pair_col'],
+              candidate_pair_col=test_candidate_pair_col,
+              elem_col=config.val.elem_col,
+              ids_to_tags=config.val.norm_id_map,
+              save_model=False
+          )
+
+          train_test_utils.pair_stage_model_main(
+              config, pair_representation, make_pair_label,
+              [dev_pair_eval, test_pair_eval, global_pair_eval],
+              [train_polarity_representation, train_polarity_label],
+              model_parameters, optimizer_parameters, model_name, feature_type
+          )
+          print(test_pair_eval.polarity_hat)
+      
+      if config.stage_model == "first":
+          global_eval.avg_model("./ModelResult/" + model_name + "/test_extraction_result.txt")
+          global_eval.store_result_to_csv([model_name], "result.csv")
+      else:
+          global_pair_eval.avg_model("./ModelResult/" + model_name + "/test_pair_result.txt")
+          global_pair_eval.store_result_to_csv([model_name], "result.csv")
 
 
 if __name__ == "__main__":

@@ -1084,40 +1084,45 @@ class PairEvaluation(BaseEvaluation):
         assert (self.save_model and model is not None) or not self.save_model
 
         # using exact, proportional and binary measure model.
-        predict_num, gold_num = {"init_pair": 0.0, "pair": 0.0}, {"init_pair": 0.0, "pair": 0.0}
-        exact_correct_num, prop_correct_num = {"init_pair": 0.0, "pair": 0.0}, {"init_pair": 0.0, "pair": 0.0}
-        binary_correct_num = {"init_pair": 0.0, "pair": 0.0}
+        # predict_num, gold_num = {"init_pair": 0.0, "pair": 0.0}, {"init_pair": 0.0, "pair": 0.0}
+        # exact_correct_num, prop_correct_num = {"init_pair": 0.0, "pair": 0.0}, {"init_pair": 0.0, "pair": 0.0}
+        # binary_correct_num = {"init_pair": 0.0, "pair": 0.0}
 
         predict_tuple_pair_col = self.get_predict_truth_tuple_pair(self.candidate_pair_col)
-
-        assert len(self.gold_pair_col) == len(predict_tuple_pair_col), "data length error!"
+      
+        # assert len(self.gold_pair_col) == len(predict_tuple_pair_col), "data length error!"
 
         # calculate elem dict.
-        # print('len sents', len(sentences))
+        # print('len sents', len(data_dict['sentences']))
+        # print('tuple',len(predict_tuple_pair_col))
+        # print('std_sents',len(data_dict['std_sents']))
         tuple_str = ""
         sentence = ""
         std_sent = ""
         mapping = {}
-        for index in range(len(self.gold_pair_col)):
-            gold_sequence_pair_col = self.gold_pair_col[index]
+        number = 0
+        print(len(predict_tuple_pair_col))
+        if(polarity):
+          print(len(data_dict['mapping_col']))
+        for index in range(len(predict_tuple_pair_col)):
             predict_sequence_pair_col = predict_tuple_pair_col[index]
 
-            gold_num['pair'] += self.get_effective_pair_num(gold_sequence_pair_col)
-            predict_num['pair'] += self.get_effective_pair_num(predict_sequence_pair_col)
+            # gold_num['pair'] += self.get_effective_pair_num(gold_sequence_pair_col)
+            # predict_num['pair'] += self.get_effective_pair_num(predict_sequence_pair_col)
 
-            gold_num['init_pair'] += self.get_effective_pair_num(gold_sequence_pair_col)
-            predict_num['init_pair'] += self.get_effective_pair_num(self.candidate_pair_col[index])
+            # gold_num['init_pair'] += self.get_effective_pair_num(gold_sequence_pair_col)
+            # predict_num['init_pair'] += self.get_effective_pair_num(self.candidate_pair_col[index])
 
-            cur_exact_num, cur_prop_num, cur_binary_num = self.get_pair_num(
-                gold_sequence_pair_col, predict_sequence_pair_col, polarity=polarity
-            )
+            # cur_exact_num, cur_prop_num, cur_binary_num = self.get_pair_num(
+            #     gold_sequence_pair_col, predict_sequence_pair_col, polarity=polarity
+            # )
 
-            cur_fake_exact_num, cur_fake_prop_num, cur_fake_binary_num = self.get_pair_num(
-                gold_sequence_pair_col, self.candidate_pair_col[index], polarity=False
-            )
+            # cur_fake_exact_num, cur_fake_prop_num, cur_fake_binary_num = self.get_pair_num(
+            #     gold_sequence_pair_col, self.candidate_pair_col[index], polarity=False
+            # )
 
-            assert cur_exact_num <= cur_prop_num <= cur_binary_num, "eval calculate error!"
-            assert cur_fake_exact_num <= cur_fake_prop_num <= cur_fake_binary_num, "eval calculate error!"
+            # assert cur_exact_num <= cur_prop_num <= cur_binary_num, "eval calculate error!"
+            # assert cur_fake_exact_num <= cur_fake_prop_num <= cur_fake_binary_num, "eval calculate error!"
 
             # tuple_str += self.print_tuple_pair(
             #     gold_sequence_pair_col, predict_sequence_pair_col, [cur_exact_num, cur_binary_num]
@@ -1125,56 +1130,63 @@ class PairEvaluation(BaseEvaluation):
             if polarity == True and initialize == (True, True):
               std_sent = data_dict['std_sents'][index]
               sentence = data_dict['sentences'][index]
+              if sentence == '':
+                tuple_str+= '\n\n'
+                continue
+              if index == len(data_dict['mapping_col']):
+                index = index-1
               mapping = data_dict['mapping_col'][index]
+              
 
             tuple_str += self.print_tuple_pair(
-                gold_sequence_pair_col, predict_sequence_pair_col, std_sent, sentence, mapping
+               predict_sequence_pair_col, std_sent, sentence, mapping
             )
-            exact_correct_num['pair'] += cur_exact_num
-            prop_correct_num['pair'] += cur_prop_num
-            binary_correct_num['pair'] += cur_binary_num
+            # exact_correct_num['pair'] += cur_exact_num
+            # prop_correct_num['pair'] += cur_prop_num
+            # binary_correct_num['pair'] += cur_binary_num
 
-            exact_correct_num['init_pair'] += cur_fake_exact_num
-            prop_correct_num['init_pair'] += cur_fake_prop_num
-            binary_correct_num['init_pair'] += cur_fake_binary_num
+            # exact_correct_num['init_pair'] += cur_fake_exact_num
+            # prop_correct_num['init_pair'] += cur_fake_prop_num
+            # binary_correct_num['init_pair'] += cur_fake_binary_num
+        if polarity == True and initialize == (True, True):
+          file_name = data_dict['file_name']
+          with open(file_name, "w", encoding='utf-8') as f:
+              f.write(tuple_str)
 
-        with open("./tuple_pair_output.txt", "w", encoding='utf-8') as f:
-            f.write(tuple_str)
-
-        print(gold_num, predict_num)
+        # print(gold_num, predict_num)
 
         # calculate f-score.
-        exact_measure = self.get_f_score(gold_num, predict_num, exact_correct_num, multi_elem_score=False)
-        prop_measure = self.get_f_score(gold_num, predict_num, prop_correct_num, multi_elem_score=False)
-        binary_measure = self.get_f_score(gold_num, predict_num, binary_correct_num, multi_elem_score=False)
+        # exact_measure = self.get_f_score(gold_num, predict_num, exact_correct_num, multi_elem_score=False)
+        # prop_measure = self.get_f_score(gold_num, predict_num, prop_correct_num, multi_elem_score=False)
+        # binary_measure = self.get_f_score(gold_num, predict_num, binary_correct_num, multi_elem_score=False)
 
-        # add polarity accuracy.
-        exact_measure = self.get_polarity_acc(exact_measure, exact_correct_num['pair'], gold_num['pair'])
-        prop_measure = self.get_polarity_acc(prop_measure, prop_correct_num['pair'], gold_num['pair'])
-        binary_measure = self.get_polarity_acc(binary_measure, binary_correct_num['pair'], gold_num['pair'])
+        # # add polarity accuracy.
+        # exact_measure = self.get_polarity_acc(exact_measure, exact_correct_num['pair'], gold_num['pair'])
+        # prop_measure = self.get_polarity_acc(prop_measure, prop_correct_num['pair'], gold_num['pair'])
+        # binary_measure = self.get_polarity_acc(binary_measure, binary_correct_num['pair'], gold_num['pair'])
 
-        keep_rate = predict_num['pair'] / predict_num['init_pair'] * 100
-        keep_rate_dict = {"P": keep_rate, "R": keep_rate, "F": keep_rate}
-        exact_measure['keep_rate'], prop_measure['keep_rate'] = keep_rate_dict, keep_rate_dict
-        binary_measure['keep_rate'] = keep_rate_dict
+        # keep_rate = predict_num['pair'] / predict_num['init_pair'] * 100
+        # keep_rate_dict = {"P": keep_rate, "R": keep_rate, "F": keep_rate}
+        # exact_measure['keep_rate'], prop_measure['keep_rate'] = keep_rate_dict, keep_rate_dict
+        # binary_measure['keep_rate'] = keep_rate_dict
 
-        # print result in file
-        self.print_measure(exact_measure, measure_file, measure_type='exact')
-        self.print_measure(prop_measure, measure_file, measure_type='prop')
-        self.print_measure(binary_measure, measure_file, measure_type='binary')
+        # # print result in file
+        # self.print_measure(exact_measure, measure_file, measure_type='exact')
+        # self.print_measure(prop_measure, measure_file, measure_type='prop')
+        # self.print_measure(binary_measure, measure_file, measure_type='binary')
 
-        if self.is_optimize(self.optimize_exact_measure, exact_measure, "pair"):
-            self.optimize_exact_measure = copy.deepcopy(exact_measure)
-            self.optimize_prop_measure = copy.deepcopy(prop_measure)
-            self.optimize_binary_measure = copy.deepcopy(binary_measure)
+        # if self.is_optimize(self.optimize_exact_measure, exact_measure, "pair"):
+        #     self.optimize_exact_measure = copy.deepcopy(exact_measure)
+        #     self.optimize_prop_measure = copy.deepcopy(prop_measure)
+        #     self.optimize_binary_measure = copy.deepcopy(binary_measure)
 
-            if self.save_model:
-                torch.save(model, model_path)
+        #     if self.save_model:
+        #         torch.save(model, model_path)
 
-        if initialize[0]:
-            self.polarity_hat = []
-        elif initialize[1]:
-            self.y_hat = []
+        # if initialize[0]:
+        #     self.polarity_hat = []
+        # elif initialize[1]:
+        #     self.y_hat = []
 
     @staticmethod
     def get_effective_pair_num(tuple_pair_col):
@@ -1278,7 +1290,7 @@ class PairEvaluation(BaseEvaluation):
     def add_polarity_to_tuple_pair(tuple_pair, polarity):
         return copy.deepcopy(tuple_pair + [(int(polarity - 1), int(polarity - 1))])
 
-    def print_tuple_pair(self, gold_tuple_pair, predict_tuple_pair, std_sent, sentence, mapping):
+    def print_tuple_pair(self, predict_tuple_pair, std_sent, sentence, mapping):
         """
         :param gold_tuple_pair:
         :param predict_tuple_pair:
@@ -1291,7 +1303,10 @@ class PairEvaluation(BaseEvaluation):
 
         # write_str += "----------------------------------" + '\n'
         for index in range(len(predict_tuple_pair)):
-          # print(predict_tuple_pair[index])
+          # print(predict_tuple_pair[index][4])
+          if(predict_tuple_pair[index] == [(-1, -1), (-1, -1), (-1, -1), (-1, -1), (-1, -1)]):
+            continue
+
           write_str += self.tuple_pair_to_string(predict_tuple_pair[index], sentence, mapping)
           
         write_str += '\n'
@@ -1305,7 +1320,7 @@ class PairEvaluation(BaseEvaluation):
       """
       polarity_col = ["DIF", "EQL", "SUP+", "SUP-", "SUP", "COM+", "COM-", "COM"]
       elem = ["subject", "object", "aspect", "predicate", 'label']
-      write_str = "{"
+      write_str = r"{"
       if len(tuple_pair) == 5:
         for index in range(len(tuple_pair)):
           if index != len(tuple_pair) - 1:
@@ -1313,27 +1328,31 @@ class PairEvaluation(BaseEvaluation):
             # write_str += "(" + str(tuple_pair[index][0]) + ", " + str(tuple_pair[index][1]) + ")"
             # write_str += '(' + ' '.join(sentence.split(' ')[s:e]) + '),
             write_str += '"' + elem[index] + '": ['
-            if (s == -1): write_str += '], '
+            
             for i in range(s, e):
+              a = sentence.split(' ')[i]
+              if (a== '"'):
+                a = '\"'
               if i != e - 1:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '", '
+                write_str +=  '"' + str(i+1) + '&&' + a + '", '
               else:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '"], '
+                write_str += '"' + str(i+1) + '&&' + a + '"'
+            write_str += '], '
           else:
             write_str += '"'+elem[index] + '": "' + polarity_col[tuple_pair[index][0]+1] + '"}\n'
-      else:
-        for index in range(len(tuple_pair)):
-          if index != len(tuple_pair) - 1:
-            s, e = self.convert_index(mapping, tuple_pair[index][0], tuple_pair[index][1])
-            write_str += '"' + elem[index] + '": ['
-            if (s == -1): write_str += '], '
-            for i in range(s, e):
-              if i != e - 1:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '", '
-              else:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '"], '
-          else:
-            write_str += '}\n\n'
+      # else:
+      #   for index in range(len(tuple_pair)):
+      #     if index != len(tuple_pair) - 1:
+      #       s, e = self.convert_index(mapping, tuple_pair[index][0], tuple_pair[index][1])
+      #       write_str += '"' + elem[index] + '": ['
+      #       if (s == -1 or e == -1): write_str += '], '
+      #       for i in range(s, e):
+      #         if i != e - 1:
+      #           write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '", '
+      #         else:
+      #           write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '"], '
+      #     else:
+      #       write_str += '}\n\n'
         # write_str = '\n'
 
       return write_str

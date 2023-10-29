@@ -65,7 +65,7 @@ def first_stage_model_test(model, config, test_loader, res_eval, eval_parameters
     else:
         gold_pair_label = eval_parameters[0]
         # print(gold_pair_label)
-        
+    # model = model.module
     with torch.no_grad():
         for index, data in tqdm(enumerate(test_loader)):
             # print(data)
@@ -74,7 +74,8 @@ def first_stage_model_test(model, config, test_loader, res_eval, eval_parameters
 
             input_ids = torch.tensor(input_ids).long().to(config.device)
             attn_mask = torch.tensor(attn_mask).long().to(config.device)
-
+            
+           
             bert_feature, elem_feature, elem_output, result_output, sent_output = model(input_ids, attn_mask)
 
             if test_type == "eval":
@@ -141,7 +142,7 @@ def pair_stage_model_test(
     """
     model.eval()
     measure_file, model_path = eval_parameters
-
+    # model = model.module
     with torch.no_grad():
         for index, data in tqdm(enumerate(test_loader)):
             pair_representation = data
@@ -226,7 +227,7 @@ def first_stage_model_main(
 
 
 def pair_stage_model_main(config, pair_representation, make_pair_label, pair_eval, polarity_col,
-                          model_parameters, optimizer_parameters, model_name, feature_type, data_dict):
+                          model_parameters, optimizer_parameters, model_name, feature_type):
     """
 
     :param config:
@@ -283,7 +284,7 @@ def pair_stage_model_main(config, pair_representation, make_pair_label, pair_eva
     dev_polarity_parameters = ["./ModelResult/" + model_name + "/dev_polarity_result.txt",
                                "./PreTrainModel/" + model_name + "/dev_polarity_model"]
 
-    for epoch in range(50):
+    for epoch in range(40):
         pair_stage_model_train(pair_model, pair_optimizer, train_pair_loader, config, epoch)
         pair_stage_model_test(
             pair_model, config, dev_pair_loader, dev_pair_eval,
@@ -303,7 +304,7 @@ def pair_stage_model_main(config, pair_representation, make_pair_label, pair_eva
     dev_polarity_loader = data_loader_utils.get_loader([dev_polarity_representation], 1)
     shared_utils.clear_optimize_measure(dev_pair_eval)
 
-    for epoch in range(50):
+    for epoch in range(40):
         pair_stage_model_train(polarity_model, polarity_optimizer, train_polarity_loader, config, epoch)
         pair_stage_model_test(
             polarity_model, config, dev_polarity_loader, dev_pair_eval,
@@ -335,8 +336,7 @@ def pair_stage_model_main(config, pair_representation, make_pair_label, pair_eva
 
     pair_stage_model_test(
         predict_polarity_model, config, test_polarity_loader, test_pair_eval,
-        test_polarity_parameters, mode="polarity", polarity=True, initialize=(True, True),
-        data_dict=data_dict
+        test_polarity_parameters, mode="polarity", polarity=True, initialize=(True, True)
     )
 
     # add average measure.
