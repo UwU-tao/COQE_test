@@ -49,7 +49,7 @@ class Baseline(nn.Module):
 
         # decode sequence label.
         elem_output = []
-        for index in range(4):
+        for index in range(3):
             if elem_label is None:
                 elem_output.append(self.decoder[index](multi_sequence_prob[index], attn_mask, None))
             else:

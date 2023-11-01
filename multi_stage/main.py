@@ -195,7 +195,7 @@ def main():
     if args.stage_model == "first":
         model_parameters = {"embed_dropout": args.embed_dropout}
     else:
-        model_parameters = {"embed_dropout": args.embed_dropout, "factor": args.factor}
+        model_parameters = {"embed_dropout": args.embed_dropout, "loss_factor": args.factor}
 
     optimizer_parameters = None
 
