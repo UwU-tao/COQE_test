@@ -120,7 +120,7 @@ def convert_data(data_type):
                     contents = parts[1].strip()
                     json_contents = contents.strip().split('\n')
                     combined_format = sentence + '\n'
-                    for i in range(1, len(parts)):
+                    for i in range(1, 2):
                         for json_content in json_contents:
                             idx_s, idx_e = (-1, -1)
                             tuples = ""
