@@ -421,8 +421,6 @@ alt: Samsung Galaxy M31s	alt : Samsung Galaxy M31s
 
 des: Samsung Galaxy M31s	des : Samsung Galaxy M31s
 
-	 
-
 Đi kèm với M31s chính là bộ sạc nhanh 25W của Samsung.	Đi kèm với M31s chính là bộ sạc nhanh 25W của Samsung .
 
 Nó không phải là quá nhanh nhưng khá phù hợp ở tầm trung này.	Nó không phải là quá nhanh nhưng khá phù hợp ở tầm trung này .
@@ -499,4 +497,3 @@ Nhìn chung Samsung Galaxy M31s là một lựa chọn khá tốt cho điện th
 Bạn sẽ có một màn hình AMOLED lớn và hiển thị đẹp, chụp ảnh tốt với camera chính và viên pin siêu khỏe 6000 mAh. Nhưng ngược lại nếu bạn hay chơi game thì đây không phải là một lựa chọn tốt.	Bạn sẽ có một màn hình AMOLED lớn và hiển thị đẹp , chụp ảnh tốt với camera chính và viên pin siêu khỏe 6000 mAh . Nhưng ngược lại nếu bạn hay chơi game thì đây không phải là một lựa chọn tốt .
 
 Bạn có thể lựa chọn những điện thoại khác với Snapdragon 720G ở cùng mức giá này.	Bạn có thể lựa chọn những điện thoại khác với Snapdragon 720G ở cùng mức giá này .
-
