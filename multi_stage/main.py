@@ -45,7 +45,7 @@ def TerminalParser():
     parser.add_argument('--server_type', help='1080ti or rtx', default='1080ti')
     parser.add_argument('--program_mode', help='debug or run or test', default='run')
     parser.add_argument('--stage_model', help='first or second', default='first')
-    parser.add_argument('--model_type', help='bert_crf, bert_crf_mtl', default='crf')
+    parser.add_argument('--model_type', help='bert_crf, bert_crf_mtl', default='multitask')
     parser.add_argument('--position_sys', help='BIES or BI or SPAN', default='BMES')
 
     parser.add_argument('--device', help='run program in device type',
@@ -56,7 +56,7 @@ def TerminalParser():
 
     # model parameters.
     parser.add_argument('--embed_dropout', help='prob of embedding dropout', type=float, default=0.1)
-    parser.add_argument('--factor', help='the type of data set', type=float, default=0.4)
+    parser.add_argument('--factor', help='the type of data set', type=float, default=0.3)
 
     # optimizer parameters.
     parser.add_argument('--bert_lr', help='the type of data set', type=float, default=2e-5)
