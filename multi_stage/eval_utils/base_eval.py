@@ -1304,8 +1304,11 @@ class PairEvaluation(BaseEvaluation):
       :return:
       """
       polarity_col = ["DIF", "EQL", "SUP+", "SUP-", "SUP", "COM+", "COM-", "COM"]
+      
       elem = ["subject", "object", "aspect", "predicate", 'label']
+      
       write_str = "{"
+      
       if len(tuple_pair) == 5:
         for index in range(len(tuple_pair)):
           if index != len(tuple_pair) - 1:
@@ -1316,26 +1319,12 @@ class PairEvaluation(BaseEvaluation):
             if (s == -1): write_str += '], '
             for i in range(s, e):
               if i != e - 1:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '", '
+                write_str += '"' + str(i+1) + '&&' + sentence.split(' ')[i] + '", '
               else:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '"], '
+                write_str += '"' + str(i+1) + '&&' + sentence.split(' ')[i] + '"], '
           else:
             write_str += '"'+elem[index] + '": "' + polarity_col[tuple_pair[index][0]+1] + '"}\n'
-      else:
-        for index in range(len(tuple_pair)):
-          if index != len(tuple_pair) - 1:
-            s, e = self.convert_index(mapping, tuple_pair[index][0], tuple_pair[index][1])
-            write_str += '"' + elem[index] + '": ['
-            if (s == -1): write_str += '], '
-            for i in range(s, e):
-              if i != e - 1:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '", '
-              else:
-                write_str += str(i+1) + '&&"' + sentence.split(' ')[i] + '"], '
-          else:
-            write_str += '}\n\n'
-        # write_str = '\n'
-
+            
       return write_str
 
     def convert_index(self, mapping, s_index, e_index):

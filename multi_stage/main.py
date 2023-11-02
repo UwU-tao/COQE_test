@@ -270,7 +270,8 @@ def main():
         print("========================test==========================")
         predicate_model = torch.load(dev_parameters[1])
 
-        test_parameters = ["./ModelResult/" + model_name + "/test_elem_result.txt", None]
+        test_parameters = ["./ModelResult/" + model_name + "/test_elem_result.txt", dev_parameters[1]]
+        # test_parameters = ["./ModelResult/" + model_name + "/test_elem_result.txt", None]
 
         test_comp_eval = create_eval.create_first_stage_eval(
             config,
