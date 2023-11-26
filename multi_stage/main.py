@@ -112,15 +112,15 @@ def convert_data(data_type):
                 parts = section.split('\n')
                 json_format = ""
                 if len(parts) >= 2:
-                    sentences = parts[0].strip()
-                    tmp, sentence = sentences.split('\t')
+                    sentence = parts[0].strip()
+                    tmp, sentence = sentence.split('\t')
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '1'
 
-                    contents = parts[1].strip()
-                    json_contents = contents.strip().split('\n')
-                    combined_format = sentence + '\n'
-                    for i in range(1, 2):
+                    for i in range(1, len(parts)):
+                        contents = parts[i].strip()
+                        json_contents = contents.strip().split('\n')
+                        combined_format = sentence + '\n'
                         for json_content in json_contents:
                             idx_s, idx_e = (-1, -1)
                             tuples = ""
@@ -165,19 +165,21 @@ def convert_data(data_type):
                     sentences_and_content.append(combined_format)
 
                 else:
-                    sentences = parts[0].split('\t')
-                    if len(sentences) == 1:
+                    sentence = parts[0].split('\t')
+                    if len(sentence) == 1:
                         continue
                     else:
-                        tmp = sentences[0]
-                        sentence = sentences[-1]
+                        tmp = sentence[0]
+                        sentence = sentence[-1]
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '0'
                     json_format = "[[];[];[];[];[]]"
                     combined_format = f"{sentence}\n{json_format}"
                     sentences_and_content.append(combined_format)
-                if data_type == 'test':
+                if(data_type == 'test'):
+                    
                     std_sents.append(tmp)
+    
     with open(des_file, 'w', encoding='utf-8') as output_file:
         for item in sentences_and_content:
             output_file.write(str(item) + '\n')
