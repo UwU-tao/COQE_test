@@ -7,7 +7,6 @@ class Simple(nn.Module):
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
         self.relu = nn.ReLU()
-        self.softmax = nn.Softmax(dim=1)
         
     def forward(self, x):
         x = self.fc1(x)

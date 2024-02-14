@@ -57,7 +57,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             with torch.no_grad():
                 outs = bert(**text_encoded)
             
-            predictions = model(outs.pooler_output)
+            predictions = model(outs.pooler_output).squeeze(1)
             preds = predictions
             loss = criterion(predictions, label)
             loss.backward()
@@ -86,7 +86,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 with torch.no_grad():
                     outs = bert(**text_encoded)
                 
-                predictions = model(outs.pooler_output)
+                predictions = model(outs.pooler_output).squeeze(1)
                 preds = predictions
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item() * len(valid_loader)
