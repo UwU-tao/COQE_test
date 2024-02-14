@@ -54,6 +54,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
             with torch.no_grad():
                 outs = bert(**text_encoded)
+            outs.to(settings['device'])
             predictions = model(outs.pooler_output)
             preds = predictions
             loss = criterion(predictions, label)
@@ -81,6 +82,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
                 with torch.no_grad():
                     outs = bert(**text_encoded)
+                outs.to(settings['device'])
                 predictions = model(outs.pooler_output)
                 preds = predictions
                 loss = criterion(predictions, label)
