@@ -31,6 +31,7 @@ def initiate(train_loader, valid_loader, test_loader):
     return train_model(settings, train_loader, valid_loader, test_loader)
 
 def train_model(settings, train_loader, valid_loader, test_loader):
+    model = settings['model']
     bert = settings['bert']
     tokenizer = settings['tokenizer']
     optimizer = settings['optimizer']
