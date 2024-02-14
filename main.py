@@ -1,4 +1,4 @@
-from utils import *
+from src.utils import *
 import torch
 from torch.utils.data import DataLoader
 from src import train
