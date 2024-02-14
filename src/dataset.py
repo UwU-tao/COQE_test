@@ -13,7 +13,6 @@ class MyDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 text, label = line.split("\t")
-                print(text, label)
                 texts.append(text)
                 labels.append(int(label))
             

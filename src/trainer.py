@@ -51,7 +51,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             label.to(settings.device)
             
             optimizer.zero_grad()
-            text_encoded = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(settings.device)
+            text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings.device)
             predictions = model(bert(text_encoded).pooler_output).squeeze(1)
             loss = criterion(predictions, label)
             loss.backward()
@@ -75,7 +75,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 label = batch['label']
                 label.to(settings.device)
                 
-                text_encoded = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(settings.device)
+                text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings.device)
                 predictions = model(bert(text_encoded).pooler_output).squeeze(1)
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item()
