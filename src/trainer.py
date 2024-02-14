@@ -58,11 +58,12 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 outs = bert(**text_encoded)
             
             predictions = model(outs.pooler_output)
+            preds = predictions
             loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item() * len(train_loader)
-            results.append(predictions)
+            results.append(preds)
             truth.append(label)
         
         results = torch.cat(results)
@@ -86,10 +87,11 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                     outs = bert(**text_encoded)
                 
                 predictions = model(outs.pooler_output)
+                preds = predictions
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item() * len(valid_loader)
 
-                results.append(predictions)
+                results.append(preds)
                 truth.append(label)
                 
         results = torch.cat(results)
