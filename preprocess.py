@@ -36,7 +36,8 @@ def convert_data(data_type):
                     tmp, sentence = sentence.split('\t')
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '1'
-                    sentences_and_content.append(sentence)
+                    if sentence not in sentences_and_content:
+                        sentences_and_content.append(sentence)
                 else:
                     sentence = parts[0].split('\t')
                     if len(sentence) == 1:
@@ -45,7 +46,8 @@ def convert_data(data_type):
                         tmp, sentence = sentence
                     sentence = " ".join(sentence.split())
                     sentence += '\t' + '0'
-                    sentences_and_content.append(sentence)
+                    if sentence not in sentences_and_content:
+                        sentences_and_content.append(sentence)
     
     with open(des_file, 'w', encoding='utf-8') as output_file:
         for item in sentences_and_content:
