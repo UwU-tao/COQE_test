@@ -67,7 +67,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         
         results = torch.cat(results)
         truth = torch.cat(truth)
-        return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
+        return results, truth, epoch_loss / len(train_loader)
     
     def evaluate(model, bert, tokenizer, criterion):
         model.eval()
@@ -95,12 +95,12 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 
         results = torch.cat(results)
         truth = torch.cat(truth)
-        return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
+        return results, truth, epoch_loss / len(valid_loader)
     
     best_valid_loss = float('inf')
     for epoch in range(1, 20):
-        train_results, train_truth, train_loss, train_acc = train(model, bert, tokenizer, optimizer, criterion)
-        valid_results, valid_truth, valid_loss, valid_acc = evaluate(model, bert, tokenizer, criterion)
+        train_results, train_truth, train_loss = train(model, bert, tokenizer, optimizer, criterion)
+        valid_results, valid_truth, valid_loss = evaluate(model, bert, tokenizer, criterion)
         scheduler.step()
 
         # Metrics calculation function is not provided. Please implement or replace it accordingly.
