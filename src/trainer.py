@@ -105,13 +105,13 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         scheduler.step()
 
         # Metrics calculation function is not provided. Please implement or replace it accordingly.
-        train_metrics = metrics(train_results, train_truth)
-        valid_metrics = metrics(valid_results, valid_truth)
+        train_acc, train_prec, train_recall, train_f1 = metrics(train_results, train_truth)
+        val_acc, val_prec, val_recall, val_f1 = metrics(valid_results, valid_truth)
 
         if epoch == 1:
             print(f'Epoch  |     Train Loss     |     Train Accuracy     |     Valid Loss     |     Valid Accuracy     |     Precision     |     Recall     |     F1-Score     |')
             
-        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{valid_loss:^20.4f}|{valid_acc:^24.4f}|{valid_metrics["precision"]:^19.4f}|{valid_metrics["recall"]:^16.4f}|{valid_metrics["f1"]:^18.4f}|')
+        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{val_loss:^20.4f}|{val_acc:^24.4f}|{val_prec:^19.4f}|{val_recall:^16.4f}|{val_f1:^18.4f}|')
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
@@ -121,7 +121,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         # Assuming you have a function load_model to load the model and calculate_metrics for test data
         loaded_model = load_model(model, 'best_model.pth')
         test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
-        test_metrics = metrics(test_results, test_truth)
+        test_acc, test_prec, test_recall, test_f1 = metrics(test_results, test_truth)
     
-        print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test F1-score {:5.4f}".format(test_acc, test_metrics["precision"], test_metrics["recall"], test_metrics["f1"]))
+        print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test f1-score {:5.4f}".format(test_acc, test_prec, test_recall, test_f1))
+        
     sys.stdout.flush()
