@@ -12,9 +12,11 @@ class MyDataset(Dataset):
         with open(f"./data/smartphone/{split}.txt") as f:
             lines = f.readlines()
             for line in lines:
-                text, label = line.split("\t")
-                texts.append(text)
-                labels.append(int(label))
+                temp = line.split("\t")
+                if len(temp) == 2:
+                    text, label = temp
+                    texts.append(text)
+                    labels.append(int(label))
             
         self.data_dict = pd.DataFrame({'text': texts, 'label': labels})                 
         self.num_classes = 2

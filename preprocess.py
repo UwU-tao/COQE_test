@@ -31,7 +31,6 @@ def convert_data(data_type):
             for section in sections:
                 tmp=""
                 parts = section.split('\n')
-                json_format = ""
                 if len(parts) >= 2:
                     sentence = parts[0].strip()
                     tmp, sentence = sentence.split('\t')
