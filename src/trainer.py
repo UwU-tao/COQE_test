@@ -1,7 +1,7 @@
 from src import models
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
-from utils import *
+from src.utils import *
 
 def initiate(train_loader, valid_loader, test_loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
