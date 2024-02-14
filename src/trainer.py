@@ -115,11 +115,10 @@ def train_model(settings, train_loader, valid_loader, test_loader):
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
-            save_model(model, 'best_model.pth')
+            save_model(model, 'best_model')
         
     if test_loader is not None:
-        # Assuming you have a function load_model to load the model and calculate_metrics for test data
-        loaded_model = load_model(model, 'best_model.pth')
+        loaded_model = load_model('best_model')
         test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
         test_acc, test_prec, test_recall, test_f1 = metrics(test_results, test_truth)
     
