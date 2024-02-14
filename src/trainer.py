@@ -6,7 +6,7 @@ from tqdm import tqdm
 from src.utils import *
 
 def initiate(train_loader, valid_loader, test_loader):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda')
     
     bert = AutoModel.from_pretrained("vinai/phobert-base-v2")
     tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
