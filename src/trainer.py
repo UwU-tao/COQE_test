@@ -62,10 +62,11 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item() * len(train_loader)
+            results.append(preds)
+            truth.append(label)
         
-            results = torch.cat(results)
-            truth = torch.cat(truth)
-
+        results = torch.cat(results)
+        truth = torch.cat(truth)
         return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
     
     def evaluate(model, bert, tokenizer, criterion):
@@ -89,9 +90,11 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item() * len(valid_loader)
 
-                results = torch.cat(results)
-                truth = torch.cat(truth)
-
+                results.append(preds)
+                truth.append(label)
+                
+        results = torch.cat(results)
+        truth = torch.cat(truth)
         return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
     
     best_valid_loss = float('inf')
