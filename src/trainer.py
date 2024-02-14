@@ -8,8 +8,8 @@ from src.utils import *
 def initiate(train_loader, valid_loader, test_loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    bert = BertModel.from_pretrained("vinai/phobert-base-v2")
-    tokenizer = BertTokenizer.from_pretrained("vinai/phobert-base-v2")
+    bert = AutoModel.from_pretrained("vinai/phobert-base-v2")
+    tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
     bert.to(device)
     tokenizer.to(device)
     
