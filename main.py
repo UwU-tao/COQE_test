@@ -6,7 +6,7 @@ from src import trainer
 print("Start loading the data....")
 train_data = get_data('train')
 test_data = get_data('test')
-dev_data = get_data('dev')
+valid_data = get_data('dev')
 
 train_loader = DataLoader(train_data, batch_size=128, shuffle=True, num_workers=2)
 valid_loader = DataLoader(valid_data, batch_size=128, shuffle=True, num_workers=2)
