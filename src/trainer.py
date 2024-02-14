@@ -42,7 +42,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
     def train(model, bert, tokenizer, optimizer, criterion):
         model.train()
         epoch_loss = 0
-        epoch_acc = 0
         results = []
         truth = []
         
@@ -62,8 +61,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
-            epoch_loss += loss.item()
-            epoch_acc += acc.item()
+            epoch_loss += loss.item() * len(train_loader)
         
             results = torch.cat((results, preds), dim=0)
             truth = torch.cat((truth, label), dim=0)
@@ -73,7 +71,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
     def evaluate(model, bert, tokenizer, criterion):
         model.eval()
         epoch_loss = 0
-        epoch_acc = 0
         results = []
         truth = []
         
@@ -90,8 +87,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 predictions = model(outs.pooler_output)
                 preds = predictions
                 loss = criterion(predictions, label)
-                epoch_loss += loss.item()
-                epoch_acc += acc.item()
+                epoch_loss += loss.item() * len(valid_loader)
 
                 results = torch.cat((results, preds), dim=0)
                 truth = torch.cat((truth, label), dim=0)
