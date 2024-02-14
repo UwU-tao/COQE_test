@@ -8,7 +8,7 @@ class MyDataset(Dataset):
         texts = []
         labels = []
         
-        with open(f"../data/smartphone/{split}.txt") as f:
+        with open(f"./data/smartphone/{split}.txt") as f:
             lines = f.readlines()
             for line in lines:
                 text, label = line.split("\t")
