@@ -11,7 +11,6 @@ def initiate(train_loader, valid_loader, test_loader):
     bert = AutoModel.from_pretrained("vinai/phobert-base-v2")
     tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
     bert.to(device)
-    tokenizer.to(device)
     
     model = getattr(models, 'Simple')(input_dim=768, hidden_dim=256, output_dim=2)
     model.to(device)
