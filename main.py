@@ -14,4 +14,4 @@ test_loader = DataLoader(test_data, batch_size=128, shuffle=False, num_workers=2
 print('Finish loading the data....')
 
 if __name__ == '__main__':
-    test_loss = trainer.initiate(hyp_params, train_loader, valid_loader, test_loader)
+    test_loss = trainer.initiate(train_loader, valid_loader, test_loader)
