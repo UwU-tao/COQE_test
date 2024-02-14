@@ -20,6 +20,7 @@ def initiate(train_loader, valid_loader, test_loader):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
     settings = {
+        'model': model,
         'device': device,
         'bert': bert,
         'tokenizer': tokenizer,
