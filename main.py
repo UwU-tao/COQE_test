@@ -1,7 +1,7 @@
 from src.utils import *
 import torch
 from torch.utils.data import DataLoader
-from src import train
+from src import trainer
 
 print("Start loading the data....")
 train_data = get_data('train')
@@ -14,4 +14,4 @@ test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=False, n
 print('Finish loading the data....')
 
 if __name__ == '__main__':
-    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+    test_loss = trainer.initiate(hyp_params, train_loader, valid_loader, test_loader)
