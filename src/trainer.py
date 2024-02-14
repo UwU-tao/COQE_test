@@ -1,3 +1,5 @@
+import torch
+import torch.nn as nn
 from src import models
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
