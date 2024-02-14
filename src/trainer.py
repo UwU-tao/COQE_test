@@ -48,7 +48,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         for batch in tqdm(train_loader):
             text = batch['text']
             label = batch['label']
-            text.to(settings.device)
             label.to(settings.device)
             
             optimizer.zero_grad()
@@ -75,7 +74,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             for batch in tqdm(valid_loader):
                 text = batch['text']
                 label = batch['label']
-                text.to(settings.device)
                 label.to(settings.device)
                 
                 text_encoded = tokenizer(text, padding=True, truncation=True, return_tensors='pt').to(settings.device)

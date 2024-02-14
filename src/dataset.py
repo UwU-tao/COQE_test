@@ -29,6 +29,6 @@ class MyDataset(Dataset):
         text = self.data_dict.iloc[idx,0]
         label = self.data_dict.iloc[idx,1]
         
-        sample = {'text': torch.Tensor(text), 'label': torch.Tensor(label)}
+        sample = {'text': text, 'label': torch.Tensor(label)}
 
         return sample
