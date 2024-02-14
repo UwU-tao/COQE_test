@@ -59,8 +59,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             epoch_loss += loss.item()
             epoch_acc += acc.item()
         
-        results.cat(predictions)
-        truth.cat(label)
+        results.cat(predictions, dim=0)
+        truth.cat(label, dim=0)
         return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
     
     def evaluate(model, bert, tokenizer, criterion):
@@ -80,8 +80,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item()
                 epoch_acc += acc.item()
-        results.cat(predictions)
-        truth.cat(label)
+        results.cat(predictions, dim=0)
+        truth.cat(label, dim=0)
         return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
     
     best_valid = 1e8
