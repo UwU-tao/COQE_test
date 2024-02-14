@@ -117,10 +117,11 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             best_valid_loss = valid_loss
             save_model(model, 'best_model.pth')
         
-        if test_loader is not None:
-            # Assuming you have a function load_model to load the model and calculate_metrics for test data
-            loaded_model = load_model(model, 'best_model.pth')
-            test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
-            test_metrics = metrics(test_results, test_truth)
-        
-            print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test F1-score {:5.4f}".format(test_acc, test_metrics["precision"], test_metrics["recall"], test_metrics["f1"]))
+    if test_loader is not None:
+        # Assuming you have a function load_model to load the model and calculate_metrics for test data
+        loaded_model = load_model(model, 'best_model.pth')
+        test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
+        test_metrics = metrics(test_results, test_truth)
+    
+        print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test F1-score {:5.4f}".format(test_acc, test_metrics["precision"], test_metrics["recall"], test_metrics["f1"]))
+    sys.stdout.flush()
