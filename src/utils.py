@@ -1,4 +1,5 @@
 from src.dataset import MyDataset
+import torch
 
 def get_data(split='train'):
     data = MyDataset(split)
