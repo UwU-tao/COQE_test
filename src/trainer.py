@@ -58,8 +58,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 outs = bert(**text_encoded)
             
             predictions = model(outs.pooler_output)
-            preds = predictions
-            loss = criterion(predictions, label)
+            preds = predictions.argmax(dim=1)
+            loss = criterion(preds, label)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item() * len(train_loader)
@@ -87,8 +87,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                     outs = bert(**text_encoded)
                 
                 predictions = model(outs.pooler_output)
-                preds = predictions
-                loss = criterion(predictions, label)
+                preds = predictions.argmax(dim=1)
+                loss = criterion(preds, label)
                 epoch_loss += loss.item() * len(valid_loader)
 
                 results.append(preds)
