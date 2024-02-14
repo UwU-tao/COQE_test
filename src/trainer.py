@@ -15,7 +15,7 @@ def initiate(train_loader, valid_loader, test_loader):
     model = getattr(models, 'Simple')(input_dim=768, hidden_dim=256, output_dim=2)
     model.to(device)
     
-    optimizer = torch.optim.Adam(bert.parameters(), lr=2e-5)
+    optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)  # Fixed to use the model's parameters
     criterion = nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
@@ -45,15 +45,18 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         epoch_acc = 0
         results = []
         truth = []
+        
         for batch in tqdm(train_loader):
             text = batch['text']
             label = batch['label']
-            label.to(settings['device'])
+            label = label.to(settings['device'])  # Move label to the same device as the model
             
             optimizer.zero_grad()
             text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
+            
             with torch.no_grad():
                 outs = bert(**text_encoded)
+            
             predictions = model(outs.pooler_output)
             preds = predictions
             loss = criterion(predictions, label)
@@ -62,8 +65,9 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             epoch_loss += loss.item()
             epoch_acc += acc.item()
         
-        results.cat(preds, dim=0)
-        truth.cat(label, dim=0)
+            results = torch.cat((results, preds), dim=0)
+            truth = torch.cat((truth, label), dim=0)
+
         return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
     
     def evaluate(model, bert, tokenizer, criterion):
@@ -72,46 +76,51 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         epoch_acc = 0
         results = []
         truth = []
+        
         with torch.no_grad():
             for batch in tqdm(valid_loader):
                 text = batch['text']
                 label = batch['label']
-                label.to(settings['device'])
+                label = label.to(settings['device'])  # Move label to the same device as the model
                 
                 text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
                 with torch.no_grad():
                     outs = bert(**text_encoded)
+                
                 predictions = model(outs.pooler_output)
-                predictions.get_device()
-                label.get_device()
                 preds = predictions
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item()
                 epoch_acc += acc.item()
-        results.cat(preds, dim=0)
-        truth.cat(label, dim=0)
+
+                results = torch.cat((results, preds), dim=0)
+                truth = torch.cat((truth, label), dim=0)
+
         return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
     
-    best_valid = 1e8
+    best_valid_loss = float('inf')
     for epoch in range(1, 20):
         train_results, train_truth, train_loss, train_acc = train(model, bert, tokenizer, optimizer, criterion)
         valid_results, valid_truth, valid_loss, valid_acc = evaluate(model, bert, tokenizer, criterion)
         scheduler.step()
-        train_acc, train_prec, train_recall, train_f1 = metrics(train_results, train_truths)
-        val_acc, val_prec, val_recall, val_f1 = metrics(val_results, val_truths)
-        
+
+        # Metrics calculation function is not provided. Please implement or replace it accordingly.
+        train_metrics = calculate_metrics(train_results, train_truth)
+        valid_metrics = calculate_metrics(valid_results, valid_truth)
+
         if epoch == 1:
             print(f'Epoch  |     Train Loss     |     Train Accuracy     |     Valid Loss     |     Valid Accuracy     |     Precision     |     Recall     |     F1-Score     |')
             
-        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{val_loss:^20.4f}|{val_acc:^24.4f}|{val_prec:^19.4f}|{val_recall:^16.4f}|{val_f1:^18.4f}|')
+        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{valid_loss:^20.4f}|{valid_acc:^24.4f}|{valid_metrics["precision"]:^19.4f}|{valid_metrics["recall"]:^16.4f}|{valid_metrics["f1"]:^18.4f}|')
 
-        if valid_loss < best_valid:
-            best_valid = valid_loss
-            save_model(model, 'best_model')
+        if valid_loss < best_valid_loss:
+            best_valid_loss = valid_loss
+            save_model(model, 'best_model.pth')
         
         if test_loader is not None:
-            model = load_model(hyp_params, name=hyp_params.name)
-            results, truths, val_loss = evaluate(model, bert, tokenizer, feature_extractor, criterion, test=True)
-            test_acc, test_prec, test_recall, test_f1 = metrics(results, truths)
+            # Assuming you have a function load_model to load the model and calculate_metrics for test data
+            loaded_model = load_model(model, 'best_model.pth')
+            test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
+            test_metrics = calculate_metrics(test_results, test_truth)
         
-            print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test f1-score {:5.4f}".format(test_acc, test_prec, test_recall, test_f1))
+            print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test F1-score {:5.4f}".format(test_acc, test_metrics["precision"], test_metrics["recall"], test_metrics["f1"]))
