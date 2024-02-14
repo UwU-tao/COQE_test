@@ -4,6 +4,7 @@ from src import models
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
 from src.utils import *
+from src.metrics import metrics
 
 def initiate(train_loader, valid_loader, test_loader):
     device = torch.device('cuda')
@@ -104,8 +105,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         scheduler.step()
 
         # Metrics calculation function is not provided. Please implement or replace it accordingly.
-        train_metrics = calculate_metrics(train_results, train_truth)
-        valid_metrics = calculate_metrics(valid_results, valid_truth)
+        train_metrics = metrics(train_results, train_truth)
+        valid_metrics = metrics(valid_results, valid_truth)
 
         if epoch == 1:
             print(f'Epoch  |     Train Loss     |     Train Accuracy     |     Valid Loss     |     Valid Accuracy     |     Precision     |     Recall     |     F1-Score     |')
@@ -120,6 +121,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             # Assuming you have a function load_model to load the model and calculate_metrics for test data
             loaded_model = load_model(model, 'best_model.pth')
             test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
-            test_metrics = calculate_metrics(test_results, test_truth)
+            test_metrics = metrics(test_results, test_truth)
         
             print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test F1-score {:5.4f}".format(test_acc, test_metrics["precision"], test_metrics["recall"], test_metrics["f1"]))
