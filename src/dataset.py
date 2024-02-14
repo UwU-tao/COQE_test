@@ -1,3 +1,5 @@
+from torch.utils.data.dataset import Dataset
+
 class MyDataset(Dataset):
 
     def __init__(self, split):
