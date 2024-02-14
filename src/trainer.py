@@ -1,4 +1,4 @@
-import models
+from src import models
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
 from utils import *
