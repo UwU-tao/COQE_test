@@ -28,7 +28,7 @@ def initiate(train_loader, valid_loader, test_loader):
         'scheduler': scheduler,
     }
     
-    return 
+    return train_model(settings, train_loader, valid_loader, test_loader)
 
 def train_model(settings, train_loader, valid_loader, test_loader):
     bert = settings['bert']
