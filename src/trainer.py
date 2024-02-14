@@ -111,7 +111,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         if epoch == 1:
             print(f'Epoch  |     Train Loss     |     Train Accuracy     |     Valid Loss     |     Valid Accuracy     |     Precision     |     Recall     |     F1-Score     |')
             
-        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{val_loss:^20.4f}|{val_acc:^24.4f}|{val_prec:^19.4f}|{val_recall:^16.4f}|{val_f1:^18.4f}|')
+        print(f'{epoch:^7d}|{train_loss:^20.4f}|{train_acc:^24.4f}|{valid_loss:^20.4f}|{val_acc:^24.4f}|{val_prec:^19.4f}|{val_recall:^16.4f}|{val_f1:^18.4f}|')
 
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
