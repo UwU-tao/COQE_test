@@ -77,7 +77,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         truth = []
         
         with torch.no_grad():
-            for batch in tqdm(valid_loader):
+            for batch in valid_loader:
                 text = batch['text']
                 label = batch['label']
                 label = label.to(settings['device'])  # Move label to the same device as the model
@@ -119,7 +119,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         
     if test_loader is not None:
         loaded_model = load_model('best_model')
-        test_results, test_truth, test_loss, test_acc = evaluate(loaded_model, bert, tokenizer, criterion)
+        test_results, test_truth, test_loss = evaluate(loaded_model, bert, tokenizer, criterion)
         test_acc, test_prec, test_recall, test_f1 = metrics(test_results, test_truth)
     
         print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test f1-score {:5.4f}".format(test_acc, test_prec, test_recall, test_f1))
