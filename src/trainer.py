@@ -63,8 +63,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             optimizer.step()
             epoch_loss += loss.item() * len(train_loader)
         
-            results = torch.cat((results, preds), dim=0)
-            truth = torch.cat((truth, label), dim=0)
+            results = torch.cat(results)
+            truth = torch.cat(truth)
 
         return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
     
@@ -89,8 +89,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item() * len(valid_loader)
 
-                results = torch.cat((results, preds), dim=0)
-                truth = torch.cat((truth, label), dim=0)
+                results = torch.cat(results)
+                truth = torch.cat(truth)
 
         return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
     
