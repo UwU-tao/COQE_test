@@ -13,7 +13,7 @@ def initiate(train_loader, valid_loader, test_loader):
     tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
     bert.to(device)
     
-    model = getattr(models, 'Simple')(input_dim=768, hidden_dim=256, output_dim=2)
+    model = getattr(models, 'Simple')(input_dim=768, hidden_dim=256, output_dim=1)
     model.to(device)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)  # Fixed to use the model's parameters
@@ -58,12 +58,11 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 outs = bert(**text_encoded)
             
             predictions = model(outs.pooler_output)
-            preds = predictions.argmax(dim=1)
-            loss = criterion(preds, label)
+            loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item() * len(train_loader)
-            results.append(preds)
+            results.append(predictions)
             truth.append(label)
         
         results = torch.cat(results)
@@ -87,11 +86,10 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                     outs = bert(**text_encoded)
                 
                 predictions = model(outs.pooler_output)
-                preds = predictions.argmax(dim=1)
-                loss = criterion(preds, label)
+                loss = criterion(predictions, label)
                 epoch_loss += loss.item() * len(valid_loader)
 
-                results.append(preds)
+                results.append(predictions)
                 truth.append(label)
                 
         results = torch.cat(results)
