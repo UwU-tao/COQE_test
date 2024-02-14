@@ -1,4 +1,6 @@
 from torch.utils.data.dataset import Dataset
+import numpy as np
+import pandas as pd
 
 class MyDataset(Dataset):
 
@@ -6,7 +8,7 @@ class MyDataset(Dataset):
         texts = []
         labels = []
         
-        with open(f"../data/{split}.dat") as f:
+        with open(f"../data/{split}.txt") as f:
             lines = f.readlines()
             for line in lines:
                 text, label = line.split("\t")
