@@ -1,4 +1,4 @@
-from data import MyDataset
+from dataset import MyDataset
 
 def get_data(split='train'):
     data = MyDataset(split)
