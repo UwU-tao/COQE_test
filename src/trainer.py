@@ -46,7 +46,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         results = []
         truth = []
         for batch in tqdm(train_loader):
-            text = bat.text
+            text = batch.text
             label = batch.label
             text.to(settings.device)
             label.to(settings.device)
