@@ -54,15 +54,15 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
             with torch.no_grad():
                 outs = bert(**text_encoded)
-            predictions = model(outs.pooler_output).squeeze(1)
-            predictions.to(settings['device'])
+            predictions = model(outs.pooler_output)
+            preds = predictions
             loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
             epoch_acc += acc.item()
         
-        results.cat(predictions, dim=0)
+        results.cat(preds, dim=0)
         truth.cat(label, dim=0)
         return results, truth, epoch_loss / len(train_loader), epoch_acc / len(train_loader)
     
@@ -81,12 +81,12 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
                 with torch.no_grad():
                     outs = bert(**text_encoded)
-                predictions = model(outs.pooler_output).squeeze(1)
-                predictions.to(settings['device'])
+                predictions = model(outs.pooler_output)
+                preds = predictions
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item()
                 epoch_acc += acc.item()
-        results.cat(predictions, dim=0)
+        results.cat(preds, dim=0)
         truth.cat(label, dim=0)
         return results, truth, epoch_loss / len(valid_loader), epoch_acc / len(valid_loader)
     
