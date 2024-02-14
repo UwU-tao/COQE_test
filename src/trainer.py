@@ -15,7 +15,7 @@ def initiate(train_loader, valid_loader, test_loader):
     model = getattr(models, 'Simple')(input_dim=768, hidden_dim=256, output_dim=2)
     model.to(device)
     
-    opimizer = torch.optim.Adam(bert.parameters(), lr=2e-5)
+    optimizer = torch.optim.Adam(bert.parameters(), lr=2e-5)
     criterion = nn.CrossEntropyLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(opimizer, step_size=5, gamma=0.1)
     
@@ -23,7 +23,7 @@ def initiate(train_loader, valid_loader, test_loader):
         'device': device,
         'bert': bert,
         'tokenizer': tokenizer,
-        'opimizer': opimizer,
+        'optimizer': optimizer,
         'criterion': criterion,
         'scheduler': scheduler,
     }
