@@ -55,6 +55,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             with torch.no_grad():
                 outs = bert(**text_encoded)
             predictions = model(outs.pooler_output).squeeze(1)
+            predictions.to(settings['device'])
             loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
@@ -81,6 +82,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 with torch.no_grad():
                     outs = bert(**text_encoded)
                 predictions = model(outs.pooler_output).squeeze(1)
+                predictions.to(settings['device'])
                 loss = criterion(predictions, label)
                 epoch_loss += loss.item()
                 epoch_acc += acc.item()
