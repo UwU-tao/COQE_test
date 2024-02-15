@@ -49,13 +49,14 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         for batch in tqdm(train_loader):
             text = batch['text']
             label = batch['label']
-            label = label.to(settings['device'])  # Move label to the same device as the model
+            label = label.to(settings['device'])
             
             optimizer.zero_grad()
             text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
-            
+            input_ids = text_encoded['input_ids']
+            attention_mask = text_encoded['attention_mask']
             with torch.no_grad():
-                outs = bert(**text_encoded)
+                outs = bert(input_ids=input_ids, attention_mask=attention_mask)
             
             predictions = model(outs.pooler_output).squeeze(1)
             preds = predictions
@@ -80,11 +81,12 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             for batch in valid_loader:
                 text = batch['text']
                 label = batch['label']
-                label = label.to(settings['device'])  # Move label to the same device as the model
+                label = label.to(settings['device'])
                 
-                text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
+                input_ids = text_encoded['input_ids']
+                attention_mask = text_encoded['attention_mask']
                 with torch.no_grad():
-                    outs = bert(**text_encoded)
+                    outs = bert(input_ids=input_ids, attention_mask=attention_mask)
                 
                 predictions = model(outs.pooler_output).squeeze(1)
                 preds = predictions
@@ -104,7 +106,6 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         valid_results, valid_truth, valid_loss = evaluate(model, bert, tokenizer, criterion)
         scheduler.step()
 
-        # Metrics calculation function is not provided. Please implement or replace it accordingly.
         train_acc, train_prec, train_recall, train_f1 = metrics(train_results, train_truth)
         val_acc, val_prec, val_recall, val_f1 = metrics(valid_results, valid_truth)
 
@@ -123,5 +124,3 @@ def train_model(settings, train_loader, valid_loader, test_loader):
         test_acc, test_prec, test_recall, test_f1 = metrics(test_results, test_truth)
     
         print("\n\nTest Acc {:5.4f} | Test Precision {:5.4f} | Test Recall {:5.4f} | Test f1-score {:5.4f}".format(test_acc, test_prec, test_recall, test_f1))
-        
-    sys.stdout.flush()
