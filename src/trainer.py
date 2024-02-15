@@ -55,8 +55,8 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
             input_ids = text_encoded['input_ids']
             attention_mask = text_encoded['attention_mask']
-            # with torch.no_grad():
-            outs = bert(input_ids=input_ids, attention_mask=attention_mask)
+            with torch.no_grad():
+                outs = bert(input_ids=input_ids, attention_mask=attention_mask)
             
             predictions = model(outs.pooler_output).squeeze(1)
             preds = predictions
