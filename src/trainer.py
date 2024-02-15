@@ -83,6 +83,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 label = batch['label']
                 label = label.to(settings['device'])
                 
+                text_encoded = tokenizer(text, padding=True, return_tensors='pt').to(settings['device'])
                 input_ids = text_encoded['input_ids']
                 attention_mask = text_encoded['attention_mask']
                 with torch.no_grad():
