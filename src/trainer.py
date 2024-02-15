@@ -62,7 +62,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
             loss = criterion(predictions, label)
             loss.backward()
             optimizer.step()
-            epoch_loss += loss.item() * 64
+            epoch_loss += loss.item()
             results.append(preds)
             truth.append(label)
         
@@ -89,7 +89,7 @@ def train_model(settings, train_loader, valid_loader, test_loader):
                 predictions = model(outs.pooler_output).squeeze(1)
                 preds = predictions
                 loss = criterion(predictions, label)
-                epoch_loss += loss.item() * 64
+                epoch_loss += loss.item()
 
                 results.append(preds)
                 truth.append(label)
