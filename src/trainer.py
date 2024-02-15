@@ -17,7 +17,7 @@ def initiate(train_loader, valid_loader, test_loader):
     model.to(device)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)  # Fixed to use the model's parameters
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCEWithLogitsLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
     settings = {
