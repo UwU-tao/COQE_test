@@ -17,3 +17,7 @@ class Simple(nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)
         return x
+    
+    def predict(self, x):
+        x = self.forward(x)
+        return torch.sigmoid(x)
