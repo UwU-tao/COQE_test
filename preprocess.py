@@ -34,20 +34,24 @@ def convert_data(data_type):
                 if len(parts) >= 2:
                     sentence = parts[0].strip()
                     tmp, sentence = sentence.split('\t')
-                    sentence = " ".join(sentence.split())
-                    sentence += '\t' + '1'
-                    if sentence not in sentences_and_content:
-                        sentences_and_content.append(sentence)
+                    
+                    if len(sentence.split()) > 2:
+                        sentence = " ".join(sentence.split())
+                        sentence += '\t' + '1'
+                        if sentence not in sentences_and_content:
+                            sentences_and_content.append(sentence)
                 else:
                     sentence = parts[0].split('\t')
                     if len(sentence) == 1:
                         continue
                     else:
                         tmp, sentence = sentence
-                    sentence = " ".join(sentence.split())
-                    sentence += '\t' + '0'
-                    if sentence not in sentences_and_content:
-                        sentences_and_content.append(sentence)
+                        
+                    if len(sentence.split()) > 2:
+                        sentence = " ".join(sentence.split())
+                        sentence += '\t' + '0'
+                        if sentence not in sentences_and_content:
+                            sentences_and_content.append(sentence)
     
     with open(des_file, 'w', encoding='utf-8') as output_file:
         for item in sentences_and_content:
